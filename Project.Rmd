@@ -1,0 +1,49 @@
+#OVERVIEW
+This project aims to discover 20 values based on a data base about exercises as final project about Practical Machine Learning
+
+#Preprocessing#
+##Reading##
+```{r, echo = TRUE}
+pml_training <- read.csv('pml-training.csv', header=TRUE)
+pml_testing <- read.csv('pml-testing.csv', header=TRUE)
+```
+##Understanding##
+```{r, echo = TRUE}
+str(pml_training)
+```
+##libraries##
+```{r, echo = TRUE}
+library(caret); library(rpart.plot); library(randomForest);library(ggplot2)
+```
+##Cleaning##
+```{r, echo = TRUE}
+#Cleaning missing values
+Train<- pml_training[, colSums(is.na(pml_training)) == 0]
+Predic <- pml_testing[, colSums(is.na(pml_testing)) == 0]
+#Cleaning the variables with no relevance
+Train <- Train[, -c(1:7)]
+Predic <- Predic[, -c(1:7)]
+#####prediction data####
+set.seed(1234) 
+Training <- createDataPartition(Train$classe, p = 0.7, list = FALSE)
+Train <- Train[Training, ]
+test <- Train[-Training, ]
+#Cleaning variance near from zero values
+NZV <- nearZeroVar(Train)
+Train <- Train[, -NZV]
+test  <- test[, -NZV]
+```
+
+#Applying RANDOM FOREST predicition
+```{r, echo = TRUE}
+Ctrl <- trainControl(method="cv", number=3, verboseIter=FALSE)
+#random forest
+RandomForest <- train(classe ~ ., data=Train, method="rf", trControl=Ctrl)
+RandomForest$finalModel
+#results
+Results <- predict(RandomForest, newdata=Predic)
+Results
+```
+Só it's possible to get the results ->  B A B A A E D B A A B C B A E E A B B B
+With  99,39% of accuracy.
+

@@ -1,0 +1,235 @@
+#Data splitting
+```{r}
+library(caret); library(kernlab);data(spam)
+inTrain <- createDataPartition(y=spam$type, p=0.75, list=FALSE)
+training<- spam[inTrain,]
+testing<- spam[-inTrain,]
+dim(training)
+```
+#Fit a model
+```{r}
+set.seed(32343)
+modelFit <- train(type ~.,data=training,method="glm")
+modelFit
+modelFit$FinalModel
+```
+#Predict
+```{r}
+predicitons <- predict(modelFit, newdata=testing)
+```
+#Confusion matrix
+```{r}
+confusionMatrix(predictions, testing$type)
+```
+#############################################################
+#k-fold
+```{r}
+set.seed(32323)
+folds <- createFolds(y=spam$type,k=10, list=TRUE, returnTrain=TRUE)
+SAPPLY(folds,length)
+folds[[1]][1:10]
+
+```
+#train options
+```{r}
+args(train.defaut)
+#OU
+function (x,y,method="rf", preProcessing = NULL,..., weights = NULL, metric = ifelse(is.factor(y), "Accuracy", "RMSE"), maximize = ifelse(metric == "RMSE", FALSE, TRUE), trControl = trConrotl = trainControl(), tuneGrid = NULL, tuneLength =3) 
+NULL
+#ou
+args(TrainControl) #para ver imputs da configuração da função trainControl
+```
+#plots
+```{r}
+#fectures
+featurePlot(x=training[,c("age","education","jobclass")], y=training$wage, plot "pairs")
+#qplot
+qplot(age,wage,data=training, colour=jobclass)
+#regressao
+qq <- qplot(Age,wage,colour=education,data=training)
+gg + geom_smooth(method = 'lm',formula=y~x)
+#cut em categorias
+cutWage <- cut2(training$wage,g=3) #no Hmisc package
+table(cutWage)
+p1 <- qplot(cutWage,age,data=training,fill=cutWage, geom=c("BoxPlot"))
+p1
+#density plots
+qplot(wage,colour=education,data=training,geom="density")
+```
+#Preprocessamento
+```{r}
+#normalizar o padrão de testes
+testCapeAve <- testing$capitalAve
+testCapAvesS <- (testCapAve - mean(trainCapAve))/sd(trainCapAve)
+means(testcapAveS)
+#funcao de pre processamento
+preObj <- preProcess(training[,-58], method=c("center","scale"))
+trainCapAveS<-predict(preObj, training[,58])$capitalAve
+mean(trainCapAveS)
+testCapAveS <- predict(preObj,testing[,-58])$capitalAve
+#é possivel passar como argumento
+modelFit <-train(type ~., data=training,preProcessing=.....)
+```
+#Covariate creation
+```{r}
+#dummies
+load data.class
+table(training$jobclass)
+dummies<-dummyvars(wage ~ jobclass,data=training)
+head(predict(dummies,newdata=training))
+#remover VARIAVEIS inuteis
+nsv <-nearZeroVar(training,saveMetrics=TRUE)
+#spline basis
+library(splines)
+bsBasis <- bs(training$age,df=3)
+bsBasis
+predict(bsBasis, age=testing$age)
+```
+#Correlated predicitors
+```{r}
+library(caret); library(*kernlab); datA(spam)
+inTrain<-createDataPartition(y=spam$type, p=0.75, list=FALSE)
+training <- spam[inTrain,]
+testing <- spam[-inTrain,]
+M<-abs(cor(training[,-58]))
+diag(M)<-0
+which(M > 0.8,arr.ind=T)
+plot(spam[,34], spam[,32])
+#Somar variaveis para melhorar predições
+
+#principal component
+prComp<-prcomp(spam[,c(34,32)])
+prComp$rotation #apresenta a o valor da soma ideal
+
+#com caret
+preProc <- preProcess(log10(spam[,-58]+1), method='PCA', pcaComp=2)
+spamPC <- PREDICT(preProc, log10+1(spam[,-58]))
+#com pre processamento
+preProc <- preProcess(log10(training[,58]+1, method="pca",pcaComp-2))
+
+```
+#Predict with regressions
+```{r}
+lm1 <- lm(eruptions ~ waitning, data= trainFaith)
+coef(lm1)[1] + coef(lm1)[2]*80
+newdata <-data.frame(waiting=80)
+predict(lm1,newdata)
+
+#erros
+sqrt(sum((lm1$fitted-trainFaith$eruptions)^2))
+ #com caret
+modFit <- train(eruptions ~waiting, data=trainFaith, mathod="lm")
+summary(modFit$finalModel)
+```
+
+#varias covariantes
+1. separada dados
+2. feacture plot
+3. fazer modelo linear
+
+#trees
+```{r}
+library(Caret)
+modFit <- train(Species ~., method= "rpart", data=training)
+print(modFit$finalModel)
+plot(modFit$finalModel, uniform=TRUE, main = "Classification Tree")
+texT(modFit$finalModel, use.n=TRUE, all=TRUE)
+#OU
+library(rattle)
+fancyRpartPlot(modFit$finalModel)
+#predict
+predict(modFit, newdata=testing)
+```
+#Bagging
+```{r}
+for (i in 1:10) {
+     ss<-sambple(1:dim(ozone)[1],replace=T)
+     ozone0<-ozone[ss,]; ozone0<-ozone0[order(ozone0@ozone),]
+     loess0 < - loess(temperature ~ozone, data=ozone0, span=0.2)
+     ll[i,] <- predict(loess0, newdata=data.fram(ozone=1:155))
+}
+#carat
+predicitor = data.frame(ozone=ozone$ozone)
+temperature = ozone$temperature
+treebag <- bag(predictors, temperature, B=10, bagControl = bagControl(fit = ctreeBag$fit, predict = ctreeBag$pred, aggregate = ctreeBag$aggregate))
+
+```
+#Randon Forests
+```{r}
+library(caret)
+modFit <- train(Species~. ,data=training, method="rf", prox=TRUE)
+getTree(modFit$finalModel, k=2)
+#predicting
+pred <- predict(modFit, testing); testing$predRight <- pred==testing$species
+table(pred,testing$Species)
+
+```
+#Boosting
+```{r}
+....
+modfit<- train(wage ç; , method = "gbm",data=training, verbose=FALSE)
+
+```
+
+#Regularized Regression
+```{r}
+library(ISLR); data(Wage); library(ggplot2); library(caret);
+Wage <- subset(Wage, select=-c(logwage))
+inBuild <- createDataPartition(y=Wage$wagemp=0.7, list=FALSE)
+validation <- Wage[-inBuild,]; buildData <- Wage[inBuild,]
+inTrain <- createDataPartition(y=buildData$wage,p=0.7, list=FALSE)
+training <- buildData[inTrain,]; testing<- buildData[=inTrain,]
+mod1<-train(wage ~., method="glm", data=training)
+mod2<-train(wage~.;metod="rf", data=training, trControl=trainControl(method="cv"),number=3)
+pred1<-predict(mod1,testing); pred2<- predict(mod2,testing)
+qplot(,data=testing)
+predDF<-data.frame(pred1,pred2,rage=testing$wage)
+combModFit <- train(wage ~. method="gam", data=predDF)
+combPred <- predict(combModFit, predDF)
+#testing
+pred1v<-predict(mod1,validation);pred2v<-predict(mod2,validation)
+predVDF<-data.frame(pred1=pred1V, pred2=pred2V)
+combpredV <- predict(combModFit,predVDF)
+#validação
+sqrt(sum((pred1v-validation$wage)^2))
+```
+#Forecasting
+```{r}
+library(quantmode)
+from.dat<-as.Date("01/01/08", format="%m/%d/%y")
+to.dat<-as.Date("12/31/13", format="%m/%d/%y")
+getSymbols("GOOG", src="google", from=from.dat, to=to.dat)
+mGoog<-tom.monthly(GOOG)
+googOpen<-Op(mGoog)
+ts1<-ts(googOpen, frequency=12)
+plot(ts1, xlab="Years+1",ylab="GOOG")
+Ts1Train <- window(ts1,start=1, end=5)
+ts1Test <- window(ts1,start=5, end(7-0.01))
+Ts1Train
+plot(ts1Train)
+lines(ma(ts1Train,order=3),col="red")
+ets1<-ets(ts1Train,model="MMM")
+fcast<-forecast(ets1)
+plot(fcast); lines(ts1Test) col="red"
+accuracy(fcast,ts1Test)
+```
+
+#Unsupervised Prediction
+```{r}
+data(iris); library(ggplot2)
+inTrain <- createDataPartition(y=iris$Species, p=0.7, list=FALSE)
+training<- iris[inTrain,]
+testing <- iris[-inTrain,]
+dim(training); dim(testing)
+#clusters
+kMeans <- kmeans(subset(training,select=~c(Species)),centers=3)
+training$clusters <- as.factor(kMeans1$cluster)
+qplot(Petal.Width, petal.Length, colour=clusters, data=training)
+table(kMeans1$cluster, training$Species) #para indentificar os cluster
+modFit <- train(clusters ~., data=subset(training,select=~c(Species)),method="rpart")
+table(predict(modFit,training),training$Species)
+#testing
+testClusterPred <- predict(modFit,testing)
+table(testClusterPred, testing$Species)
+```
+
